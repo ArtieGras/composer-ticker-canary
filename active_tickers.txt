@@ -1,0 +1,18 @@
+# active_tickers.txt — list every ticker your Composer symphonies trade.
+#
+# FORMAT:
+#   - Comma-separated. Whitespace and newlines around commas are fine.
+#   - Lines starting with '#' are comments and ignored.
+#   - Tokens starting with '$' are skipped (Composer cash placeholders).
+#   - '/' is auto-converted to '.' so "BRK/B" works as "BRK.B".
+#
+# WHAT TO INCLUDE:
+#   Add every ticker that appears in any of your live or draft Composer
+#   symphonies. The canary checks each one daily for delisting risk,
+#   tradability changes, and SEC filings announcing closures or symbol
+#   changes. Tickers you don't include are not protected.
+#
+# REPLACE THE EXAMPLE LIST BELOW with your actual tickers.
+
+SPY,QQQ,GLD,TLT,IWM,EFA,EEM,HYG,LQD,VNQ,
+TQQQ,SQQQ,UPRO,SPXU,SOXL,SOXS,UVXY,SVXY
