@@ -13,13 +13,49 @@ from zoneinfo import ZoneInfo
 from google import genai
 
 # --- CONFIGURATION (Pulled securely from GitHub Vault) ---
-GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS")
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
-ALPACA_API_KEY = os.environ.get("ALPACA_API_KEY")
-ALPACA_SECRET_KEY = os.environ.get("ALPACA_SECRET_KEY")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+def _get_secret(name):
+    """Read an env var, returning empty string if unset or whitespace-only."""
+    return (os.environ.get(name) or "").strip()
 
-# Initialize the GenAI Client
+GMAIL_ADDRESS = _get_secret("GMAIL_ADDRESS")
+GMAIL_APP_PASSWORD = _get_secret("GMAIL_APP_PASSWORD")
+ALPACA_API_KEY = _get_secret("ALPACA_API_KEY")
+ALPACA_SECRET_KEY = _get_secret("ALPACA_SECRET_KEY")
+GEMINI_API_KEY = _get_secret("GEMINI_API_KEY")
+EDGAR_USER_AGENT = _get_secret("EDGAR_USER_AGENT")
+
+# Fail-fast validation: all 6 secrets are required. Stops a misconfigured fork
+# from running silently with degraded function (e.g. workflow appears to succeed
+# but no email arrives because GMAIL_APP_PASSWORD was empty).
+_required_secrets = [
+    ("GMAIL_ADDRESS", GMAIL_ADDRESS,
+     "Your Gmail address (e.g. you@gmail.com)"),
+    ("GMAIL_APP_PASSWORD", GMAIL_APP_PASSWORD,
+     "Gmail 16-character app password (NOT your regular password)"),
+    ("ALPACA_API_KEY", ALPACA_API_KEY,
+     "Alpaca paper-trading API Key ID"),
+    ("ALPACA_SECRET_KEY", ALPACA_SECRET_KEY,
+     "Alpaca paper-trading Secret Key"),
+    ("GEMINI_API_KEY", GEMINI_API_KEY,
+     "Google Gemini API key (free tier is sufficient)"),
+    ("EDGAR_USER_AGENT", EDGAR_USER_AGENT,
+     'SEC EDGAR User-Agent in format "Your Name your.email@example.com"'),
+]
+_missing = [(name, desc) for name, value, desc in _required_secrets if not value]
+if _missing:
+    _msg_lines = ["ERROR: Required GitHub Secrets are not set or are empty:"]
+    for name, desc in _missing:
+        _msg_lines.append(f"  - {name}: {desc}")
+    _msg_lines += [
+        "",
+        "Set each as a GitHub Secret in your repo:",
+        "  Settings -> Secrets and variables -> Actions -> New repository secret",
+        "",
+        "See the README for full setup instructions.",
+    ]
+    raise SystemExit("\n".join(_msg_lines))
+
+# Initialize the GenAI Client (after validation confirms GEMINI_API_KEY is set)
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 FILE_PATH = "active_tickers.txt"
@@ -37,19 +73,6 @@ BASE_URL = "https://paper-api.alpaca.markets/v2"
 # symbol/name changes. Searches full-text of recent filings.
 # ============================================================
 EDGAR_BASE_URL = "https://efts.sec.gov/LATEST/search-index"
-# SEC requires a User-Agent identifying the requester. MUST be set as a GitHub
-# Secret in the format: "Your Name your.email@example.com". Fail fast if missing
-# so a misconfigured fork doesn't silently send blocked requests.
-EDGAR_USER_AGENT = (os.environ.get("EDGAR_USER_AGENT") or "").strip()
-if not EDGAR_USER_AGENT:
-    raise SystemExit(
-        "ERROR: EDGAR_USER_AGENT environment variable is not set.\n"
-        "SEC requires a User-Agent identifying the requester for EDGAR queries.\n"
-        "Set this as a GitHub Secret in your repo:\n"
-        "  Settings -> Secrets and variables -> Actions -> New repository secret\n"
-        "  Name:  EDGAR_USER_AGENT\n"
-        "  Value: Your Name your.real.email@example.com\n"
-    )
 EDGAR_HEADERS = {
     "User-Agent": EDGAR_USER_AGENT,
     "Accept": "application/json",
@@ -378,7 +401,10 @@ def load_local_tickers():
             for t in raw_tickers:
                 if not t or t.startswith("$"):
                     continue
-                clean_tickers.append(t.replace("/", "."))
+                # Normalize: '/' -> '.' (BRK/B -> BRK.B) and uppercase
+                # so user-typed lowercase entries (tqqq) still match the
+                # Alpaca asset map, which is keyed on uppercase symbols.
+                clean_tickers.append(t.replace("/", ".").upper())
             return clean_tickers
     except FileNotFoundError:
         print(f"File not found: {FILE_PATH}")
