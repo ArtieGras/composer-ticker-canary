@@ -93,7 +93,7 @@ Alpaca is the broker whose asset database we'll be reading. They allow free pape
 
 1. Go to **https://alpaca.markets** and click **Sign Up**.
 2. Create an account with your email. (Free, no credit card needed for paper trading.)
-3. After you confirm your email and log in, look at the dashboard. By default, you'll be in the Paper Trading view.
+3. After you confirm your email and log in (use a different email than your Composer account if it trades through Alpaca), look at the dashboard. By default, you'll be in the Paper Trading view.
 4. Find the **API Keys** section (left sidebar or under your profile menu, depending on the version of their UI you see).
 5. Click to **generate** new API keys. Alpaca will show you two strings:
    - **API Key ID** (starts with letters/numbers, ~20 chars)
