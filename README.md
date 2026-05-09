@@ -220,7 +220,7 @@ This first run does two important things: it confirms everything is configured c
 4. On the right side of the page, you'll see a small notice: **"This workflow has a workflow_dispatch event trigger."** Below it, there's a **"Run workflow"** button. Click it.
 5. A small dropdown appears. Leave the default options. Click the green **"Run workflow"** button at the bottom.
 6. The page will refresh. You'll see a new entry in the workflow runs list with a yellow circle (in progress).
-7. Wait a few minutes. The yellow circle will become a green checkmark (success) or red X (failed).
+7. Wait a few minutes - shouldn't take more than 10. The yellow circle will become a green checkmark (success) or red X (failed).
 
 #### If the run succeeded (green checkmark)
 
