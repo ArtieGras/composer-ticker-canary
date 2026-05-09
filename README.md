@@ -13,7 +13,7 @@ Common ways this breaks:
 - **An ETF gets liquidated.** Issuers close ETFs all the time — leveraged and inverse ETFs especially. By the time Composer notices, you're already in trouble.
 - **A ticker gets delisted.** The exchange pulls a security; trading stops; your symphony's logic fails silently.
 - **A symbol or name change.** The ticker you knew as `XYZ` is now `ABC`; your symphony still says `XYZ`; trades fail.
-- **A broker-side restriction.** Alpaca (or whoever Composer routes through) flags a symbol as untradable; orders get rejected.
+- **A broker-side restriction.** Alpaca (or Apex) flags a symbol as untradable; orders get rejected.
 
 In all these cases, you usually have **30 to 60 days of advance notice** if you know where to look. The notices appear in:
 
@@ -36,7 +36,7 @@ Every weekday at ~7:17 AM ET (configurable), you receive an email with:
 - **Broker status** (any tickers untradable or missing from your broker's database)
 - **Ticker advance warning** (any SEC filings or Alpaca asset-list changes affecting your tickers)
 
-The "Ticker advance warning" section is the main reason this exists. The rest is bonus context that's useful if you trade systematically.
+The "Ticker advance warning" section is the main reason this exists. The rest is bonus context that's useful daily info if you trade.
 
 ---
 
@@ -47,7 +47,7 @@ The system runs as a GitHub Actions workflow — a free automation that runs dai
 It uses three independent sources to catch problems:
 
 1. **SEC EDGAR full-text search** — queries the SEC's free filings database for each of your tickers, looking for liquidation, termination, and name-change announcements in recent filings. Gives 30-60 days advance notice.
-2. **Alpaca asset-list diff** — checks Alpaca's list of tradable securities every day and flags any ticker on your list that disappeared, became untradable, or changed name overnight. Gives same-day notice if something slips past EDGAR.
+2. **Alpaca asset-list diff** — (backup) checks Alpaca's list of tradable securities every day and flags any ticker on your list that disappeared, became untradable, or changed name overnight. Gives same-day notice if something slips past EDGAR.
 3. **Alpaca corporate actions feed** — checks for upcoming mergers and spinoffs in the next 14 days affecting your tickers.
 
 If any source flags something, it appears in your email with details and a link to the relevant filing.
@@ -89,7 +89,7 @@ You now have your own copy. Everything from here on happens in your copy, not th
 
 ### Step 2 — Get an Alpaca paper-trading account
 
-Alpaca is the broker whose asset database we'll be reading. They give free paper-trading accounts. We only need to *read* their public asset metadata, so paper credentials work fine — we don't actually trade through Alpaca.
+Alpaca is the broker whose asset database we'll be reading. They allow free paper-trading accounts, separate from your Composer account. We only need to *read* their public asset metadata, so paper credentials work fine — we don't actually trade through Alpaca with this account.
 
 1. Go to **https://alpaca.markets** and click **Sign Up**.
 2. Create an account with your email. (Free, no credit card needed for paper trading.)
@@ -182,14 +182,14 @@ The fastest way:
 
 1. Open Composer.trade.
 2. For each symphony you trade (live or in your draft roster), open the symphony in the Symphony Editor.
-3. Find Composer's **"Edit Code"** or **"View JSON"** feature (the exact button name varies — look for a "code" or "JSON" view option). Copy the entire JSON code.
+3. Find Composer's **"Copy Symphony JSON"** button. Copy the entire JSON code.
 4. Open Claude (claude.ai) or another AI in a new tab.
 5. Paste the JSON and use a prompt like this:
 
    > Extract all unique stock ticker symbols from this Composer.trade symphony JSON. Return them comma-separated, sorted alphabetically, with no duplicates. Skip any cash placeholders that start with `$` (like `$USD`).
 
 6. The AI will give you a comma-separated list. Save it.
-7. Repeat for every symphony.
+7. Repeat for every symphony. (Tip: If you don't trade a single "master" symphony, copy all your symphonies into a singe "master" draft symphony, then get that symphony's json code. This allows you to extract all your traded tickers in one shot.) 
 8. Combine all the lists into one big list, deduplicated.
 
 #### Updating the file in your repo
@@ -305,7 +305,7 @@ This tool is intended for traders who use Composer.trade and may benefit from sh
 
 ## Author and license
 
-Created and maintained by Arthur Gueli.
+Created by Arthur Gueli.
 
 Released under the MIT License. See the LICENSE file for full text.
 
@@ -315,7 +315,7 @@ The MIT License means: do whatever you want with this code, including modify, re
 
 ## No support
 
-This software is provided as-is. There is no support channel — no email to write to, no Discord to ping, no issues queue being monitored. The README is the documentation. If something doesn't work and the troubleshooting section doesn't help, you're on your own.
+This software is provided as-is. There is no support channel — no email to write to, no issues queue being monitored. The README is the documentation. If something doesn't work and the troubleshooting section doesn't help, you're on your own. You can always ask an AI agent to help troubleshoot.
 
 If you're not comfortable with that, this might not be the right tool for you. If you find bugs and want to fix them, fork it and fix it yourself — that's what the MIT License is for.
 
