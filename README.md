@@ -1,6 +1,6 @@
 # Composer Ticker Canary
 
-A daily early-warning system for Composer.trade traders. It watches every ticker in your strategies and emails you when something is about to go wrong — **before** it breaks your symphonies.
+A daily early-warning system for Composer traders. It watches every ticker in your strategies and emails you when something is about to go wrong — **before** it breaks your symphonies.
 
 ---
 
