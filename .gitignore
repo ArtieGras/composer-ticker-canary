@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.Python
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Local secrets / env files (never commit these)
+.env
+.env.local
+*.secret
+
+# Note: daily_intel.json, previous_regime.json, and previous_assets.json
+# are intentionally NOT ignored — the workflow commits them back to the
+# repo on each run so state persists across runs.
